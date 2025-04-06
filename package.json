@@ -6,7 +6,6 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "postinstall": "prisma generate --schema=prisma/schema.prisma",
     "lint": "next lint"
   },
   "dependencies": {
@@ -34,7 +33,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8",
-    "prisma": "^5.17.0",
+    "prisma": "^6.5.0",
     "shadcn-ui": "^0.9.4",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
