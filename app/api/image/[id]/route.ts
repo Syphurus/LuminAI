@@ -2,12 +2,10 @@ import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Context {
-  params: { id: string };
-}
-
-// DELETE: Delete an image
-export async function DELETE(req: NextRequest, context: Context) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   const { userId } = await auth();
   const imageId = context.params.id;
 
@@ -35,8 +33,10 @@ export async function DELETE(req: NextRequest, context: Context) {
   }
 }
 
-// PATCH: Update an image's prompt
-export async function PATCH(req: NextRequest, context: Context) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   const { userId } = await auth();
   const imageId = context.params.id;
 
