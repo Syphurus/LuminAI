@@ -4,10 +4,10 @@ import { db } from "@/lib/db";
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   const { userId } = await auth();
-  const imageId = context.params.id;
+  const imageId = params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
