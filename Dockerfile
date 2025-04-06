@@ -1,38 +1,43 @@
-# Start from official Node image
+# Start from official Node image with Python preinstalled
 FROM node:18-bullseye
 
-# Install Python and other tools
-RUN apt-get update && apt-get install -y python3 python3-pip postgresql-client supervisor
+# Install Python and required system packages
+RUN apt-get update && apt-get install -y python3 python3-pip postgresql-client supervisor curl
+
+# Install global Prisma CLI (needed for Python Prisma generation)
+RUN npm install -g prisma
+
+# Install Python Prisma CLI
+RUN pip3 install 'prisma-client-py[cli]'
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and install deps
+# Copy dependency files
 COPY package*.json ./
+COPY requirements.txt ./
 COPY prisma ./prisma
 
-# Install Node.js dependencies
+# Install Node dependencies
 RUN npm install
 
 # Install Python dependencies
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt \
-    && pip3 install prisma-client-py
+RUN pip3 install -r requirements.txt
 
-# Generate Prisma clients (Node.js + Python)
-RUN npx prisma generate
+# Generate both Prisma clients
+RUN prisma generate
 
-# Copy the rest of the project files
+# Copy all other project files
 COPY . .
 
-# Build the Next.js app
+# Build Next.js frontend
 RUN npm run build
 
-# Expose frontend and backend ports
+# Expose all necessary ports
 EXPOSE 3000 8000 8001 8002 8003 8004 5555
 
-# Copy Supervisor config
+# Add supervisor config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Start all services using Supervisor
+# Start all services
 CMD ["/usr/bin/supervisord", "-n"]
