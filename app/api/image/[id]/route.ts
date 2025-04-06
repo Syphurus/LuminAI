@@ -2,13 +2,14 @@ import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+interface Context {
+  params: { id: string };
+}
+
 // DELETE: Delete an image
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest, context: Context) {
   const { userId } = await auth();
-  const imageId = params.id;
+  const imageId = context.params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,12 +36,9 @@ export async function DELETE(
 }
 
 // PATCH: Update an image's prompt
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, context: Context) {
   const { userId } = await auth();
-  const imageId = params.id;
+  const imageId = context.params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
