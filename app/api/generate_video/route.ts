@@ -1,5 +1,3 @@
-// app/api/generate_video/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -13,7 +11,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Send POST request to FastAPI backend at port 8002
     const response = await fetch("http://localhost:8002/api/generate_video", {
       method: "POST",
       headers: {
@@ -33,6 +30,7 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
+    console.error("Video generation error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

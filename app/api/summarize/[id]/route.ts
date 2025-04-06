@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // DELETE a summary
 export async function DELETE(
-  _: NextRequest,
+  _req: NextRequest,
   context: { params: { id: string } }
 ) {
   const { userId } = await auth();
@@ -49,15 +49,16 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { summary } = await req.json();
-  if (!summary) {
-    return NextResponse.json(
-      { error: "Summary content required" },
-      { status: 400 }
-    );
-  }
-
   try {
+    const { summary } = await req.json();
+
+    if (!summary) {
+      return NextResponse.json(
+        { error: "Summary content required" },
+        { status: 400 }
+      );
+    }
+
     const existing = await db.generatedSummary.findUnique({
       where: { id: summaryId },
     });
