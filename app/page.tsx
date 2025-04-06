@@ -1,101 +1,137 @@
-import Image from "next/image";
+"use client";
+
+import { useUser, SignInButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
+import { FiFileText, FiImage, FiVideo } from "react-icons/fi";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const { isSignedIn } = useUser();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white flex flex-col">
+      <Navbar />
+
+      {/* Hero Section */}
+      <section className="flex flex-col items-center text-center px-6 md:px-12 mt-40">
+        <motion.h1
+          className="text-4xl md:text-6xl font-extrabold leading-tight"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
+          Generate AI-Powered Content <br /> in Seconds
+        </motion.h1>
+        <p className="text-lg md:text-xl text-gray-200 mt-4 max-w-2xl">
+          Summarize text, create AI-generated videos, and turn words into images
+          or SVGs — all in one place.
+        </p>
+        <motion.div
+          className="mt-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
+          <SignInButton>
+            <Button
+              className="px-6 py-3 bg-white text-indigo-600 font-semibold text-lg rounded-lg hover:bg-gray-200 transition-all"
+              type="button"
+            >
+              {isSignedIn ? "Go to Dashboard" : "Get Started"}
+            </Button>
+          </SignInButton>
+        </motion.div>
+      </section>
+
+      {/* Features Section */}
+      <section className="mt-24 px-6 md:px-12">
+        <h2 className="text-3xl font-bold text-center mb-8">What You Can Do</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <FeatureCard
+            icon={<FiFileText size={32} />}
+            title="Summarize Text"
+            description="Quickly condense articles, reports, or long documents using AI-powered summarization."
+          />
+          <FeatureCard
+            icon={<FiImage size={32} />}
+            title="Generate Image"
+            description="Create stunning visuals by describing them in text. Ideal for creative workflows."
+          />
+          <FeatureCard
+            icon={<FiVideo size={32} />}
+            title="Generate Video"
+            description="Convert your ideas into AI-generated animated videos from simple prompts."
+          />
+          <FeatureCard
+            icon={<FiImage size={32} />}
+            title="Ghibli Image Generator"
+            description="Transform photos into magical Studio Ghibli-style visuals using AI."
+          />
+          <FeatureCard
+            icon={<FiImage size={32} />}
+            title="SVG Generator"
+            description="Generate clean and scalable SVG illustrations powered by AI."
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </section>
+
+      {/* Testimonials */}
+      <section className="mt-24 px-6 md:px-12">
+        <h2 className="text-3xl font-bold text-center mb-8">What Users Say</h2>
+        <div className="flex flex-col md:flex-row gap-8 justify-center">
+          <TestimonialCard
+            name="Alex Johnson"
+            text="This AI generator has saved me hours of work! The summarization tool is a game-changer."
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <TestimonialCard
+            name="Sophia Lee"
+            text="I love how easy it is to create AI-generated videos and images. Highly recommended!"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="mt-24 py-6 text-center bg-white/10 backdrop-blur-md">
+        <p className="text-gray-300">
+          &copy; 2025 AI Generator. All rights reserved.
+        </p>
       </footer>
     </div>
   );
 }
+
+// Feature Card Component
+const FeatureCard = ({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) => {
+  return (
+    <motion.div
+      className="bg-white/10 p-6 rounded-xl shadow-lg flex flex-col items-center text-center"
+      whileHover={{ scale: 1.05 }}
+    >
+      <div className="text-white bg-indigo-500 p-4 rounded-full">{icon}</div>
+      <h3 className="mt-4 text-xl font-semibold">{title}</h3>
+      <p className="text-gray-200 mt-2">{description}</p>
+    </motion.div>
+  );
+};
+
+// Testimonial Card Component
+const TestimonialCard = ({ name, text }: { name: string; text: string }) => {
+  return (
+    <motion.div
+      className="bg-white/10 p-6 rounded-xl shadow-lg text-center max-w-md"
+      whileHover={{ scale: 1.05 }}
+    >
+      <p className="text-gray-200 italic">"{text}"</p>
+      <h3 className="mt-4 text-lg font-semibold">{name}</h3>
+    </motion.div>
+  );
+};

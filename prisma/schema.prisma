@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-py"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model GeneratedImage {
+  id        String   @id @default(uuid())
+  userId    String
+  prompt    String
+  imageUrl  String
+  createdAt DateTime @default(now())
+}
+
+model GeneratedVideo {
+  id        String   @id @default(uuid())
+  userId    String
+  prompt    String
+  videoUrl  String
+  createdAt DateTime @default(now())
+}
+
+model GeneratedSummary {
+  id        String   @id @default(uuid())
+  userId    String
+  prompt    String
+  summary   String
+  createdAt DateTime @default(now())
+}
+
+model GeneratedGhibli {
+  id        String   @id @default(cuid())
+  userId    String
+  prompt    String
+  imageUrl  String
+  createdAt DateTime @default(now())
+}
+
+model GeneratedSVG {
+  id        String   @id @default(uuid())
+  userId    String
+  prompt    String
+  svg       String
+  createdAt DateTime @default(now())
+}
