@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import type { NextApiRequestContext } from "next";
 
-// DELETE: Delete a generated image by ID
-export async function DELETE(
-  req: NextRequest,
-  context: { params: { id: string } } // ✅ correct context structure
-) {
+export async function DELETE(req: NextRequest, context: NextApiRequestContext) {
   const { userId } = await auth();
   const imageId = context.params.id;
 
