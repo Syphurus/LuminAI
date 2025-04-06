@@ -5,10 +5,10 @@ import { db } from "@/lib/db";
 // DELETE: Delete a generated image by ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } } // ✅ correct context structure
 ) {
   const { userId } = await auth();
-  const imageId = params.id;
+  const imageId = context.params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
