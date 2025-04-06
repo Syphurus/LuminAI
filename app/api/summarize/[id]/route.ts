@@ -3,12 +3,9 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 // DELETE a summary
-export async function DELETE(
-  _req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(_req: NextRequest, { params }: any) {
   const { userId } = await auth();
-  const summaryId = context.params.id;
+  const summaryId = params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,6 +24,7 @@ export async function DELETE(
     }
 
     await db.generatedSummary.delete({ where: { id: summaryId } });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting summary:", error);
@@ -38,12 +36,9 @@ export async function DELETE(
 }
 
 // PATCH to edit a summary's text
-export async function PATCH(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: any) {
   const { userId } = await auth();
-  const summaryId = context.params.id;
+  const summaryId = params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

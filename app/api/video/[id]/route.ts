@@ -3,9 +3,9 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // DELETE: Delete a specific video by ID
-export async function DELETE(_: Request, context: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: any) {
   const { userId } = await auth();
-  const videoId = context.params.id;
+  const videoId = params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

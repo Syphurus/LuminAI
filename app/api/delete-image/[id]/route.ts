@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import type { NextApiRequestContext } from "next";
 
-export async function DELETE(req: NextRequest, context: NextApiRequestContext) {
+export async function DELETE(req: NextRequest, { params }: any) {
   const { userId } = await auth();
-  const imageId = context.params.id;
+  const imageId = params.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
