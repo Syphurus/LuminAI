@@ -9,6 +9,7 @@ WORKDIR /app
 
 # Copy package.json and install deps
 COPY package*.json ./
+COPY prisma ./prisma  
 RUN npm install
 
 # Copy everything else
