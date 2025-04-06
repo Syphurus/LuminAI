@@ -7,30 +7,32 @@ RUN apt-get update && apt-get install -y python3 python3-pip postgresql-client s
 # Set working directory
 WORKDIR /app
 
-# Copy only package.json and prisma schema first (for layer caching)
+# Copy package.json and install deps
 COPY package*.json ./
 COPY prisma ./prisma
 
-# Install Node dependencies
+# Install Node.js dependencies
 RUN npm install
 
-# Generate Prisma client BEFORE build
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt \
+    && pip3 install prisma-client-py
+
+# Generate Prisma clients (Node.js + Python)
 RUN npx prisma generate
 
-# Copy rest of the project files
+# Copy the rest of the project files
 COPY . .
 
-# Build the Next.js app for production
+# Build the Next.js app
 RUN npm run build
 
-# Install Python dependencies
-RUN pip3 install -r requirements.txt
-
-# Expose all ports needed
+# Expose frontend and backend ports
 EXPOSE 3000 8000 8001 8002 8003 8004 5555
 
-# Copy Supervisor config file
+# Copy Supervisor config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Start services via Supervisor
+# Start all services using Supervisor
 CMD ["/usr/bin/supervisord", "-n"]
