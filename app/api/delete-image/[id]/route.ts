@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
-export async function DELETE(_: Request, context: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   const { userId } = await auth();
   const imageId = context.params.id;
 
@@ -11,7 +14,6 @@ export async function DELETE(_: Request, context: { params: { id: string } }) {
   }
 
   try {
-    // Make sure the image belongs to this user
     const image = await db.generatedImage.findUnique({
       where: { id: imageId },
     });
