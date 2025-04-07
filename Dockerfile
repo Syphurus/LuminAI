@@ -9,41 +9,40 @@ RUN apt-get update && \
 # Install Prisma CLI (for JS) globally
 RUN npm install -g prisma
 
-# Install Python Prisma client (just 'prisma', not prisma-client-py[cli])
+# Install Python Prisma client
 RUN pip3 install prisma
 
 # Set working directory
 WORKDIR /app
 
-# Copy Prisma schema and generate early for caching
+# Copy only package files and prisma schema for layer caching
+COPY package*.json ./
 COPY prisma ./prisma
 
-# Copy package files and install dependencies
-COPY package*.json ./
+# Install JS dependencies and Prisma JS client
 RUN npm install
 RUN npm install @prisma/client
 
-# Generate both JS and Python Prisma clients
-RUN prisma generate
+# ⚠️ Don't run `prisma generate` here yet — it will be invalidated
 
-# Copy the full app (backend, frontend, etc.)
+# Copy full project **after installing dependencies**
 COPY . .
 
-# Re-run Prisma generate to cover overwritten schema/code
+# ✅ Now run Prisma generate (after all files are present)
 RUN prisma generate
 
-# Build the Next.js app (needs JS Prisma client ready)
+# Now build the Next.js app (JS Prisma client will be present)
 RUN npm run build
 
-# Install Python backend dependencies
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
-# Expose all ports
+# Expose ports
 EXPOSE 3000 8000 8001 8002 8003 8004 5555
 
-# Copy supervisor configuration
+# Copy supervisord config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Start all services
+# Start everything
 CMD ["/usr/bin/supervisord", "-n"]
