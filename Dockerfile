@@ -1,41 +1,43 @@
 # --- Use Node.js as the base image ---
-    FROM node:18
+    FROM node:18-bullseye
 
+    # --- Install system dependencies ---
+    RUN apt-get update && apt-get install -y \
+        python3 python3-pip postgresql-client supervisor
+    
     # --- Set working directory ---
     WORKDIR /app
     
-    # --- Install system dependencies ---
-    RUN apt-get update && apt-get install -y \
-        python3 python3-pip python3-venv curl git
+    # --- Set a temporary DATABASE_URL for Prisma generation ---
+    # Replace with your actual connection string or set via environment variables at runtime.
+    ENV DATABASE_URL="postgresql://postgres:password@localhost:5432/postgres"
     
-    # --- Set up Python virtual environment ---
-    RUN python3 -m venv /opt/venv
-    ENV PATH="/opt/venv/bin:$PATH"
-    
-    # --- Upgrade pip and install Python Prisma + FastAPI ---
-    RUN pip install --upgrade pip
-    RUN pip install prisma==0.13.1 fastapi uvicorn
-    
-    # --- Copy package.json and install Node.js dependencies ---
+    # --- Copy package files and install Node.js dependencies ---
     COPY package*.json ./
     RUN npm install
     
-    # --- Install specific Prisma versions (Node.js) ---
-    RUN npm install prisma@5.11.0 @prisma/client@5.11.0
+    # --- Copy Prisma schema folder (ensure your schema is at prisma/schema.prisma) ---
+    COPY prisma ./prisma
     
-    # --- Copy rest of the project files ---
+    # --- Generate Node.js Prisma client (uses DATABASE_URL above) ---
+    RUN npx prisma generate --schema=prisma/schema.prisma
+    
+    # --- Copy the rest of the project files ---
     COPY . .
     
-    # --- Generate Prisma clients (Python and Node.js) ---
-    RUN python -m prisma generate
-    RUN npx prisma generate
-    
-    # --- Build frontend ---
+    # --- Build Next.js app ---
     RUN npm run build
     
-    # --- Expose frontend and backend ports ---
-    EXPOSE 3000 8000 8001 8002 8003
+    # --- Install Python dependencies ---
+    COPY requirements.txt .
+    RUN pip3 install -r requirements.txt
     
-    # --- Start the app (adjust this if using next start or a custom server) ---
-    CMD ["npm", "start"]
+    # --- Expose ports as needed ---
+    EXPOSE 3000 8000 8001 8002 8003 8004 5555
+    
+    # --- Copy Supervisor configuration ---
+    COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+    
+    # --- Start services via Supervisor ---
+    CMD ["/usr/bin/supervisord", "-n"]
     
