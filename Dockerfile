@@ -1,47 +1,44 @@
-# Use Node.js with Debian for Python compatibility
+# Use Node.js base with Debian (for Python)
 FROM node:18-bullseye
 
-# Install Python, pip, PostgreSQL client, and supervisord
+# Install Python and tools
 RUN apt-get update && \
     apt-get install -y python3 python3-pip postgresql-client supervisor && \
     pip3 install --upgrade pip
 
-# Install Prisma CLI (for JS) globally
+# Install global Prisma CLI for JS
 RUN npm install -g prisma
 
-# Install Python Prisma client
+# Install Python Prisma CLI
 RUN pip3 install prisma
 
 # Set working directory
 WORKDIR /app
 
-# Copy only package files and prisma schema for layer caching
+# Copy package files and install JS deps early (cache layer)
 COPY package*.json ./
-COPY prisma ./prisma
-
-# Install JS dependencies and Prisma JS client
 RUN npm install
-RUN npm install @prisma/client
 
-# ⚠️ Don't run `prisma generate` here yet — it will be invalidated
-
-# Copy full project **after installing dependencies**
+# Copy entire project now (this includes prisma/ and everything else)
 COPY . .
 
-# ✅ Now run Prisma generate (after all files are present)
-RUN prisma generate
+# Install JS Prisma client (needed by Next.js build)
+RUN npm install @prisma/client
 
-# Now build the Next.js app (JS Prisma client will be present)
+# 🔥 Forcefully regenerate Prisma clients AFTER full copy
+RUN npx prisma generate
+
+# Build Next.js app (JS Prisma client now guaranteed)
 RUN npm run build
 
-# Install Python dependencies
+# Install Python backend deps
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
 # Expose ports
 EXPOSE 3000 8000 8001 8002 8003 8004 5555
 
-# Copy supervisord config
+# Add supervisord config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Start everything
