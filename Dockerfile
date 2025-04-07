@@ -15,8 +15,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# Install Python Prisma client + FastAPI deps
-RUN pip install prisma==0.13.1 prisma-client-py==0.13.1 fastapi uvicorn
+# ✅ Install Python Prisma client + FastAPI deps
+RUN pip install "prisma==0.13.1" fastapi uvicorn
 
 # Copy Node files and install Node deps
 COPY package*.json ./
