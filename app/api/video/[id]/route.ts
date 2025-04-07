@@ -1,9 +1,9 @@
-import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // DELETE: Delete a specific video by ID
 export async function DELETE(_: Request, { params }: any) {
+  const { prisma } = await import("@/lib/prisma"); // 👈 Safe dynamic import
   const { userId } = await auth();
   const videoId = params.id;
 
@@ -12,7 +12,7 @@ export async function DELETE(_: Request, { params }: any) {
   }
 
   try {
-    const video = await db.generatedVideo.findUnique({
+    const video = await prisma.generatedVideo.findUnique({
       where: { id: videoId },
     });
 
@@ -23,7 +23,7 @@ export async function DELETE(_: Request, { params }: any) {
       );
     }
 
-    await db.generatedVideo.delete({ where: { id: videoId } });
+    await prisma.generatedVideo.delete({ where: { id: videoId } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting video:", error);
