@@ -15,12 +15,16 @@ RUN pip install prisma==0.13.1 fastapi uvicorn
 
 # Copy Node package files and install Node dependencies (including Prisma JS client)
 COPY package*.json ./
+# Install specific Prisma versions for Node
 RUN npm install prisma@5.17.0 @prisma/client@5.17.0
 RUN npm install
 
+# Ensure @prisma/client is installed (sometimes a separate install helps)
+RUN npm install @prisma/client
+
 # Copy the Prisma schema folder so that the schema is available
 COPY prisma ./prisma
-# Debug: list contents of prisma folder (should show schema.prisma)
+# (Optional) List contents of prisma folder for debugging
 RUN ls -la prisma
 
 # Generate Prisma clients using the explicit schema path
