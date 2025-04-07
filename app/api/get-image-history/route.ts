@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -10,7 +9,10 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const images = await db.generatedImage.findMany({
+    // ✅ Dynamically import Prisma
+    const { prisma } = await import("@/lib/prisma");
+
+    const images = await prisma.generatedImage.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
     });

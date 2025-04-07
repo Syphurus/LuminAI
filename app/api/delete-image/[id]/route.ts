@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
 
 export async function DELETE(req: NextRequest, { params }: any) {
+  const { prisma } = await import("@/lib/prisma"); // ✅ dynamic import
   const { userId } = await auth();
   const imageId = params.id;
 
@@ -11,7 +11,7 @@ export async function DELETE(req: NextRequest, { params }: any) {
   }
 
   try {
-    const image = await db.generatedImage.findUnique({
+    const image = await prisma.generatedImage.findUnique({
       where: { id: imageId },
     });
 
@@ -22,7 +22,7 @@ export async function DELETE(req: NextRequest, { params }: any) {
       );
     }
 
-    await db.generatedImage.delete({
+    await prisma.generatedImage.delete({
       where: { id: imageId },
     });
 

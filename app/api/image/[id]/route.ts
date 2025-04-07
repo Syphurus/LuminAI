@@ -1,4 +1,3 @@
-import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,7 +11,9 @@ export async function DELETE(req: NextRequest, { params }: any) {
   }
 
   try {
-    const image = await db.generatedImage.findUnique({
+    const { prisma } = await import("@/lib/prisma");
+
+    const image = await prisma.generatedImage.findUnique({
       where: { id: imageId },
     });
 
@@ -23,7 +24,7 @@ export async function DELETE(req: NextRequest, { params }: any) {
       );
     }
 
-    await db.generatedImage.delete({ where: { id: imageId } });
+    await prisma.generatedImage.delete({ where: { id: imageId } });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -48,7 +49,9 @@ export async function PATCH(req: NextRequest, { params }: any) {
   }
 
   try {
-    const image = await db.generatedImage.findUnique({
+    const { prisma } = await import("@/lib/prisma");
+
+    const image = await prisma.generatedImage.findUnique({
       where: { id: imageId },
     });
 
@@ -59,7 +62,7 @@ export async function PATCH(req: NextRequest, { params }: any) {
       );
     }
 
-    const updated = await db.generatedImage.update({
+    const updated = await prisma.generatedImage.update({
       where: { id: imageId },
       data: { prompt },
     });

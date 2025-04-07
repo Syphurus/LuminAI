@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 // GET: Fetch all videos for the logged-in user
 export async function GET() {
   const { userId } = await auth();
+
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -14,6 +15,7 @@ export async function GET() {
       where: { userId },
       orderBy: { createdAt: "desc" },
     });
+
     return NextResponse.json(videos);
   } catch (error) {
     console.error("Error fetching videos:", error);
@@ -27,6 +29,7 @@ export async function GET() {
 // POST: Save a newly generated video
 export async function POST(req: Request) {
   const { userId } = await auth();
+
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

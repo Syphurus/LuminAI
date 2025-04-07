@@ -28,7 +28,20 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+
+    // ✅ Dynamically import Prisma only after video is generated
+    const { prisma } = await import("@/lib/prisma");
+
+    // Save generated video to DB
+    const savedVideo = await prisma.generatedVideo.create({
+      data: {
+        prompt,
+        userId: user_id,
+        videoUrl: data.videoUrl,
+      },
+    });
+
+    return NextResponse.json(savedVideo);
   } catch (error) {
     console.error("Video generation error:", error);
     return NextResponse.json(

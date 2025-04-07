@@ -1,4 +1,3 @@
-import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,10 +8,13 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const images = await db.generatedImage.findMany({
+    const { prisma } = await import("@/lib/prisma");
+
+    const images = await prisma.generatedImage.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
     });
+
     return NextResponse.json(images);
   } catch (error) {
     console.error("Error fetching image history:", error);
@@ -31,11 +33,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const { imageUrl, prompt } = await req.json();
+
     if (!imageUrl || !prompt) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const newImage = await db.generatedImage.create({
+    const { prisma } = await import("@/lib/prisma");
+
+    const newImage = await prisma.generatedImage.create({
       data: { userId, prompt, imageUrl },
     });
 

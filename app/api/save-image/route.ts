@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -13,7 +12,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const newImage = await db.generatedImage.create({
+    const { prisma } = await import("@/lib/prisma");
+
+    const newImage = await prisma.generatedImage.create({
       data: {
         userId,
         imageUrl,

@@ -1,4 +1,3 @@
-import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -11,7 +10,9 @@ export async function GET() {
   }
 
   try {
-    const summaries = await db.generatedSummary.findMany({
+    const { prisma } = await import("@/lib/prisma");
+
+    const summaries = await prisma.generatedSummary.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
     });
@@ -44,7 +45,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const newSummary = await db.generatedSummary.create({
+    const { prisma } = await import("@/lib/prisma");
+
+    const newSummary = await prisma.generatedSummary.create({
       data: {
         userId,
         prompt,
