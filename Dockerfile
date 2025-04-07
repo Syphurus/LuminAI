@@ -1,47 +1,47 @@
-# Use Node base image with Python support
-FROM node:18-bullseye
+# Use Node.js as the base image
+FROM node:18
+
+# Set working directory
+WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    python3 python3-pip python3-venv curl git postgresql-client supervisor
+    python3 python3-pip python3-venv curl git
 
-# Create and activate a Python virtual environment
+# Create and activate Python virtual environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Upgrade pip and install Python dependencies (including Prisma for Python)
+# Upgrade pip and install Python packages
 RUN pip install --upgrade pip
 RUN pip install prisma==0.13.1 fastapi uvicorn
 
-# Copy Node package files and install Node dependencies (including Prisma JS client)
+# Copy only package.json and lock first for caching
 COPY package*.json ./
-# Install specific Prisma versions for Node
-RUN npm install prisma@5.17.0 @prisma/client@5.17.0
+
+# Install Node.js dependencies
 RUN npm install
 
-# Ensure @prisma/client is installed (sometimes a separate install helps)
-RUN npm install @prisma/client
+# --- 🔥 Install Prisma CLI and @prisma/client manually ---
+RUN npm install prisma@5.11.0 @prisma/client@5.11.0
 
-# Copy the Prisma schema folder so that the schema is available
+# Copy Prisma schema before generating
 COPY prisma ./prisma
-# (Optional) List contents of prisma folder for debugging
-RUN ls -la prisma
 
-# Generate Prisma clients using the explicit schema path
+# 🔁 Generate the Node.js Prisma client (REQUIRES schema and @prisma/client present)
 RUN npx prisma generate --schema=prisma/schema.prisma
-RUN python -m prisma generate
 
-# Copy the rest of the project files
+# Copy the rest of your codebase
 COPY . .
 
-# Build the Next.js frontend
+# Generate Python Prisma client
+RUN python -m prisma generate
+
+# Build your frontend
 RUN npm run build
 
-# Expose necessary ports (adjust as needed)
-EXPOSE 3000 8000 8001 8002 8003 8004 5555
+# Expose necessary ports
+EXPOSE 3000 8000 8001 8002 8003 8004
 
-# Copy Supervisor configuration file
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Start all services via Supervisor
-CMD ["/usr/bin/supervisord", "-n"]
+# Start your server
+CMD ["npm", "start"]
