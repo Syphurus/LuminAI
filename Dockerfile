@@ -1,45 +1,61 @@
-# Use Node.js base with Debian (for Python)
-FROM node:18-bullseye
+# Base image with Node.js + Python
+FROM node:20-bullseye
 
-# Install Python and tools
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip postgresql-client supervisor && \
-    pip3 install --upgrade pip
-
-# Install global Prisma CLI for JS
-RUN npm install -g prisma
-
-# Install Python Prisma CLI
-RUN pip3 install prisma
+# Install Python, pip, and required system dependencies
+RUN apt-get update && apt-get install -y \
+  python3 python3-pip python3-venv \
+  build-essential libpq-dev curl
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install JS deps early (cache layer)
-COPY package*.json ./
-RUN npm install
-
-# Copy entire project now (this includes prisma/ and everything else)
+# Copy full project including frontend and backend
 COPY . .
 
-# Install JS Prisma client (needed by Next.js build)
-RUN npm install @prisma/client
+# ----------------------------
+# 🔧 Prisma setup
+# ----------------------------
 
-# 🔥 Forcefully regenerate Prisma clients AFTER full copy
+# Install specific compatible Prisma CLI version
+RUN npm install -g prisma@5.17.0
+RUN npm install @prisma/client@5.17.0
+
+# Install Python Prisma client tool
+RUN pip3 install prisma
+
+# Allow Python Prisma client to skip version mismatch error
+ENV PRISMA_PY_DEBUG_GENERATOR=1
+
+# Generate Prisma clients (Node + Python)
 RUN npx prisma generate
 
-# Build Next.js app (JS Prisma client now guaranteed)
+# ----------------------------
+# 📦 Install frontend deps and build
+# ----------------------------
+
+RUN npm install
 RUN npm run build
 
-# Install Python backend deps
-COPY requirements.txt .
+# ----------------------------
+# 🐍 Install FastAPI dependencies
+# ----------------------------
+
+WORKDIR /app/(backend)
+
+# Install backend Python dependencies
 RUN pip3 install -r requirements.txt
 
-# Expose ports
-EXPOSE 3000 8000 8001 8002 8003 8004 5555
+# ----------------------------
+# 🚀 Run both frontend + backend servers
+# ----------------------------
 
-# Add supervisord config
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+WORKDIR /app
 
-# Start everything
-CMD ["/usr/bin/supervisord", "-n"]
+# Run all 5 FastAPI apps + Next.js server concurrently
+CMD sh -c "\
+  uvicorn '(backend).summarize:app' --host 0.0.0.0 --port 8000 & \
+  uvicorn '(backend).image_generation:app' --host 0.0.0.0 --port 8001 & \
+  uvicorn '(backend).video_generator:app' --host 0.0.0.0 --port 8002 & \
+  uvicorn '(backend).ghibli:app' --host 0.0.0.0 --port 8003 & \
+  uvicorn '(backend).svg_generator:app' --host 0.0.0.0 --port 8004 & \
+  npm run start"
