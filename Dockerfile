@@ -1,61 +1,68 @@
-# Base image with Node.js + Python
-FROM node:20-bullseye
-
-# Install Python, pip, and required system dependencies
-RUN apt-get update && apt-get install -y \
-  python3 python3-pip python3-venv \
-  build-essential libpq-dev curl
-
-# Set working directory
-WORKDIR /app
-
-# Copy full project including frontend and backend
-COPY . .
-
 # ----------------------------
-# 🔧 Prisma setup
+# 🧱 Base stage for dependencies
 # ----------------------------
+    FROM node:18 AS base
 
-# Install specific compatible Prisma CLI version
-RUN npm install -g prisma@5.17.0
-RUN npm install @prisma/client@5.17.0
-
-# Install Python Prisma client tool
-RUN pip3 install prisma
-
-# Allow Python Prisma client to skip version mismatch error
-ENV PRISMA_PY_DEBUG_GENERATOR=1
-
-# Generate Prisma clients (Node + Python)
-RUN npx prisma generate
-
-# ----------------------------
-# 📦 Install frontend deps and build
-# ----------------------------
-
-RUN npm install
-RUN npm run build
-
-# ----------------------------
-# 🐍 Install FastAPI dependencies
-# ----------------------------
-
-WORKDIR /app/(backend)
-
-# Install backend Python dependencies
-RUN pip3 install -r requirements.txt
-
-# ----------------------------
-# 🚀 Run both frontend + backend servers
-# ----------------------------
-
-WORKDIR /app
-
-# Run all 5 FastAPI apps + Next.js server concurrently
-CMD sh -c "\
-  uvicorn '(backend).summarize:app' --host 0.0.0.0 --port 8000 & \
-  uvicorn '(backend).image_generation:app' --host 0.0.0.0 --port 8001 & \
-  uvicorn '(backend).video_generator:app' --host 0.0.0.0 --port 8002 & \
-  uvicorn '(backend).ghibli:app' --host 0.0.0.0 --port 8003 & \
-  uvicorn '(backend).svg_generator:app' --host 0.0.0.0 --port 8004 & \
-  npm run start"
+    WORKDIR /app
+    
+    # Copy all project files
+    COPY . .
+    
+    # ----------------------------
+    # 📦 Install dependencies
+    # ----------------------------
+    RUN npm install
+    
+    # ----------------------------
+    # ⚙️ Install Python & Pipenv
+    # ----------------------------
+    RUN apt-get update && apt-get install -y python3 python3-pip
+    
+    # Install Python dependencies
+    RUN pip3 install --upgrade pip
+    RUN pip3 install prisma fastapi uvicorn
+    
+    # ----------------------------
+    # 🔧 Generate Prisma Clients
+    # ----------------------------
+    
+    # Node.js Prisma Client (for Next.js)
+    RUN npx prisma generate --schema=prisma/schema.prisma
+    
+    # Python Prisma Client (used in FastAPI)
+    # Use the Python Prisma generator here
+    RUN prisma generate --generator=prisma-client-py
+    
+    # ----------------------------
+    # 🏗 Build Next.js frontend
+    # ----------------------------
+    RUN npm run build
+    
+    # ----------------------------
+    # 🐳 Final stage: fullstack production
+    # ----------------------------
+    FROM node:18
+    
+    WORKDIR /app
+    
+    COPY --from=base /app /app
+    
+    # Install serve for static hosting
+    RUN npm install -g serve
+    
+    # ----------------------------
+    # 🌐 Expose ports for all backends
+    # ----------------------------
+    EXPOSE 3000 8000 8001 8002 8003 8004
+    
+    # ----------------------------
+    # 🚀 Start all servers
+    # ----------------------------
+    CMD bash -c " \
+        uvicorn '(backend).summarize:app' --port 8000 & \
+        uvicorn '(backend).image_generation:app' --port 8001 & \
+        uvicorn '(backend).video_generator:app' --port 8002 & \
+        uvicorn '(backend).ghibli:app' --port 8003 & \
+        uvicorn '(backend).svg_generator:app' --port 8004 & \
+        serve -s out -l 3000"
+    
