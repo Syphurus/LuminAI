@@ -23,7 +23,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Prisma CLI globally for Node.js client
-RUN npm install -g prisma
+RUN npm install
 
 # Copy Prisma schema
 COPY prisma ./prisma
