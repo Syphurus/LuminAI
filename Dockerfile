@@ -1,42 +1,41 @@
-# Use official Node image with Python preinstalled
+# Start from Node.js base image with Python
 FROM node:18
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install Node dependencies
-COPY package.json package-lock.json ./
-RUN npm install
+# Install system dependencies (Python, pip, curl, venv)
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-venv curl git
 
-# Install Prisma CLI
+# Create virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install Python Prisma client + FastAPI deps
+RUN pip install prisma==0.13.1 prisma-client-py==0.13.1 fastapi uvicorn
+
+# Copy Node files and install Node deps
+COPY package*.json ./
+RUN npm install
 RUN npm install prisma@5.17.0 --save-dev
+RUN npm install @prisma/client
 
 # Copy the rest of the app
 COPY . .
 
-# Generate Node Prisma client
+# Run prisma generate for both JS and Python
 RUN npx prisma generate --schema=prisma/schema.prisma
-
-# Install Python & pip, create venv
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv && \
-    python3 -m venv /opt/venv
-
-# Activate venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install Python dependencies (no prisma-client-py needed anymore)
-RUN pip install --upgrade pip
-RUN pip install "prisma==0.13.1" fastapi uvicorn
-
-# Generate Python Prisma client
-RUN python3 -m prisma generate
+RUN python -m prisma generate
 
 # Build the Next.js app
 RUN npm run build
 
-# Expose frontend and backend ports
+# Expose frontend + backend ports
 EXPOSE 3000 8000 8001 8002 8003 8004
 
-# Start both frontend and backend as needed (customize this part)
+# Start Next.js (you can customize this to run uvicorn too)
 CMD ["npm", "start"]
